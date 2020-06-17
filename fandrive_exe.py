@@ -2,31 +2,35 @@
 # -*- coding: utf-8 -*-
 import sys
 import re
-form fandrive import fanpwmout
+from fandrive import fanpwmout
+
+
+FANPWM_DEVICE_FILE="/sys/devices/pwm-fan/target_pwm"
 
 ARG_DFLT_DUTY = 50
 ARG_DFLT_DUTY_STR = str(ARG_DFLT_DUTY)
 
-
 args = sys.argv
-pwmduty = ARG_DFLT_DUTY
 
-# 引数省略時はDFLT_DUTYに固定
 if len(args) == 1:
-  args.append(ARG_DFLT_DUTY_STR)
-
-# 引数を判定
-if re.match(r'[0-9]{1,3}', args[1]):
+  # 引数省略時はDFLT_DUTYに固定
+  pwmduty = ARG_DFLT_DUTY
+else:
+  # 引数ありの場合
   try:
-    dutyfile = open(FANPWM_DEVICE_FILE,'w')
-  except :
-    print("CAN'T OPEN FILE")
+    pwmduty = float(args[1])
+  except ValueError as identifier:
+    print("Error! Argument is NOT Number!")
     sys.exit(1)
   else:
-    print("PWM_DAT=" + fanpwmout(float(args[1])))
-    sys.exit(0)
+    pass
+
+
+try:
+  rtnstrtmp = fanpwmout(FANPWM_DEVICE_FILE, pwmduty)
+except FileNotFoundError:
+  print ("Can't Find Fanpwm File.")
+except PermissionError:
+  print ("Can't Open Fanpwm File.")
 else:
-  print("Arg is ONLY num(0-100)")
-  sys.exit(1)
-
-
+  print("PWM_DAT = " + str(rtnstrtmp))
