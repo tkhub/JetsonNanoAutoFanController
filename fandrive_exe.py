@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 import sys
 import re
-from fandrive import fanpwmout
+from fandrive import pwmout
 
 
-FANPWM_DEVICE_FILE="/sys/devices/pwm-fan/target_pwm"
 
 ARG_DFLT_DUTY = 50
 ARG_DFLT_DUTY_STR = str(ARG_DFLT_DUTY)
@@ -27,7 +26,7 @@ else:
 
 
 try:
-  rtnstrtmp = fanpwmout(FANPWM_DEVICE_FILE, pwmduty)
+  rtnstrtmp = pwmout(pwmduty)
 except FileNotFoundError:
   print ("Can't Find Fanpwm File.")
 except PermissionError:

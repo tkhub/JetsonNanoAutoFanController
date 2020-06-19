@@ -1,24 +1,27 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# togikai 81893782263
-
-# import sys
-
-# FANPWM_DEVICE_FILE="/sys/devices/pwm-fan/target_pwm"
+import os
+FANPWM_DEVICE_FILE="/sys/devices/pwm-fan/target_pwm"
 PWMDAT_MAX = 255
 PWMDATF_MAX = float(PWMDAT_MAX)
 PWMDUTYF_MAX = 100.0
 
-def fanpwmout(pwmdevice_path, duty):
-  try:
-    pwmdevice_file = open(pwmdevice_path, 'w')
-  except FileNotFoundError:
-    raise FileNotFoundError("CAN'T FINDE\""+ pwmdevice_path +"\".")
-  except PermissionError:
-    raise PermissionError("CAN'T OPEN \""+ pwmdevice_path +"\".")
+def fanchk():
+  if os.path.exists(FANPWM_DEVICE_FILE):
+    return True
   else:
-    pwmduty = (PWMDATF_MAX * duty) / PWMDUTYF_MAX 
+    return False
+
+def pwmout(duty):
+  try:
+    pwmdevice_file = open(FANPWM_DEVICE_FILE, 'w')
+  except FileNotFoundError:
+    raise FileNotFoundError("CAN'T FINDE\""+ FANPWM_DEVICE_FILE + "\".")
+  except PermissionError:
+    raise PermissionError("CAN'T OPEN \""+ FANPWM_DEVICE_FILE + "\".")
+  else:
+    pwmduty = (PWMDATF_MAX * duty) / PWMDUTYF_MAX
     pwmdat = round(pwmduty)
     # pwm dat limit
     if pwmdat < 0:
