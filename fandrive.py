@@ -8,7 +8,7 @@ PWMDATF_MAX = float(PWMDAT_MAX)
 PWMDUTYF_MAX = 100.0
 
 def fanchk():
-  if os.path.exists(FANPWM_DEVICE_FILE):
+  if os.access(FANPWM_DEVICE_FILE, os.W_OK):
     return True
   else:
     return False
@@ -38,3 +38,4 @@ def pwmout(duty):
 #  print(fanpwmout(FANPWM_DEVICE_FILE, float(args[1])))
 # else:
 #   print("arg err")
+#print(fanchk())
