@@ -18,7 +18,7 @@ def readsystemp(mode):
   sys_min_index = 0
   sys_max_temp = ABSTEMP_ZERO
   sys_min_temp = 1000.0
-  sys_ave_temp = 0
+  sys_ave_temp = 0.0
   sys_temp_cnt = 0
   for i in range(10):
     strtmp = sns_name_path.replace('X',str(i)).replace('YYYY','type')
@@ -69,15 +69,16 @@ def readsystemp(mode):
             sys_min_temp = ftemp
             sys_min_index = i
           sys_temp_cnt += 1
-          sys_temp_cnt += ftemp
+          sys_ave_temp += ftemp
   if sys_temp_cnt == 0:
     # 
     raise FileNotFoundError("CAN'T OPEN ANY TEMP SNS FILE!")
   else:
-    sys_ave_temp = sys_ave_temp / sys_temp_cnt
+    sys_ave = sys_ave_temp / sys_temp_cnt
   
   if mode == ARG_MODE_AVE:
-    return "Average" , sys_ave_temp
+    print(sns_temp)
+    return "Average" , sys_ave
   elif mode == ARG_MODE_MAX:
     return sns_name[sys_max_index - 1], sns_temp[sys_max_index - 1]
   elif mode == ARG_MODE_MIN:
