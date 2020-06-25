@@ -1,0 +1,2 @@
+*/1 * * * * root /usr/local/sbin/JetsonNanoAutoFanController/fanctrl.py >> /var/log/autofan.log 2>&1
+
