@@ -21,7 +21,7 @@ SNS_MODE_AVE = "AVE"
 
 FANPWM_DEVICE_FILE="/sys/devices/pwm-fan/target_pwm"
 
-CSV_PATH = "/usr/local/sbin/JetsonNanoAutoFanController/"
+CSV_PATH = os.path.dirname(os.path.abspath(__file__)) + "/"
 CSV_FILE = "fanspdcnf.csv"
 LOG_PATH = "/var/log/"
 LOG_FILE = "tempfan.log"
@@ -183,7 +183,7 @@ def logout(mnmd, tgsns, temp, pwmduty):
     with open(LOG_PATH + LOG_FILE, 'a') as f:
         f.write(outstr)
 
-
+print(CSV_PATH + CSV_FILE)
 fd =readconf()
 fd.readcnf()
 ttbl,ptbl = fd.readtbl()
