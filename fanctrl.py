@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import sys
 import csv
+import os
 import re
 import fandrive
 import numpy
@@ -19,7 +21,8 @@ SNS_MODE_AVE = "AVE"
 
 FANPWM_DEVICE_FILE="/sys/devices/pwm-fan/target_pwm"
 
-CSV_PATHF = "./fanspdcnf.csv"
+CSV_PATH = "/usr/local/sbin/JetsonNanoAutoFanController/"
+CSV_FILE = "fanspdcnf.csv"
 LOG_PATH = "/var/log/"
 LOG_FILE = "tempfan.log"
 
@@ -70,7 +73,6 @@ TABLE
 
 
 
-FANSPD_CONF = "./fanspdcnf.csv"
 class readconf:
     def __init__(self):
         self.stpen = False
@@ -89,7 +91,7 @@ class readconf:
 
     def readcnf(self):
         try:
-            conff = open(FANSPD_CONF,'r')
+            conff = open(CSV_PATH + CSV_FILE,'r')
         except:
             self.stpen = False
             self.monsns="Can't_Open_conf.csv"
@@ -191,10 +193,13 @@ fc = ctrlpwm(ttbl,ptbl)
 sns, deg = readtemp(mon, exmon)
 duty = fc.calcduty(deg)
 outstr = ""
+dt_now = datetime.datetime.now()
+
 try:
     fandrive.pwmout(duty)
 except:
-    logout(mon, sns, deg, "DutyOutError")
+    print( str(dt_now) +" : " + mon + " : " + sns + " : "+ str(deg) + " : DutyOutError")
+    sys.exit(1)
 else:
-    logout(mon, sns, deg, duty)
-
+    print( str(dt_now) +" : " + mon + " : " + sns + " : "+ str(deg) + " : " +  str(duty) )
+    sys.exit(1)
