@@ -1,11 +1,11 @@
-source, MAX,
-EX-source, iwlwifi,
-stop, 1
-tmp, speed
+SOURCE, max,
+EX_source, iwlwifi,
+STOP,ENABLE,
+TABLE
+#temp, #speed
 30, 20
 35, 30
 40, 40
 45, 50
 50, 75
 60, 100
-

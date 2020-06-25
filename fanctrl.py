@@ -6,15 +6,16 @@ import re
 import fandrive
 import numpy
 from systemp import readsystemp
+import datetime
 
-SNS_MODE_AO = "AO-therm"
-SNS_MODE_CPU = "CPU-therm"
-SNS_MODE_GPU = "GPU-therm"
-SNS_MODE_PLL = "PLL-therm"
-SNS_MODE_TFE = "thermal-fan-est"
-SNS_MODE_WIFI = "iwlwifi"
-SNS_MODE_MAX = "max"
-SNS_MODE_AVE = "ave"
+SNS_MODE_AO = "AO-THERM"
+SNS_MODE_CPU = "CPU-THERM"
+SNS_MODE_GPU = "GPU-THERM"
+SNS_MODE_PLL = "PLL-THERM"
+SNS_MODE_TFE = "THERMAL-FAN-EST"
+SNS_MODE_WIFI = "IWLWIFI"
+SNS_MODE_MAX = "MAX"
+SNS_MODE_AVE = "AVE"
 
 FANPWM_DEVICE_FILE="/sys/devices/pwm-fan/target_pwm"
 
@@ -97,30 +98,34 @@ class readconf:
             csvobj = csv.reader(conff)
             readmode = self.FMT_CONFMD
             for row in csvobj:
-                if row[0].startswith('#'):
+                rowrd = []
+                for i in range(len(row)):
+                    tmp = row[i].strip()
+                    rowrd.append(tmp.upper())
+
+
+                if rowrd[0].startswith('#'):
                     pass
                 elif readmode == self.FMT_CONFMD:
-                    if row[0].upper() == self.CNF_STPEN:
-                        if row[1].upper() == self.CNF_ENABLE:
+                    if rowrd[0] == self.CNF_STPEN:
+                        if rowrd[1] == self.CNF_ENABLE:
                             self.stpen = 1
                         else:
                             self.stpen = 0
 
-                    if row[0].upper() == self.CNF_SOURCE:
-                        self.monsns = row[1]
+                    if rowrd[0] == self.CNF_SOURCE:
+                        self.monsns = rowrd[1]
 
-                    if row[0].upper() == self.CNF_EXSOURCE:
-                        for i in range(len(row)):
+                    if rowrd[0] == self.CNF_EXSOURCE:
+                        for i in range(len(rowrd)):
                             if 1 <= i:
-                                self.exmonsns.append(row[i])
+                                self.exmonsns.append(rowrd[i])
 
-                    if row[0].upper() == self.FMT_TBLMD:
-                        print("conf-> tbl")
+                    if rowrd[0] == self.FMT_TBLMD:
                         readmode = self.FMT_TBLMD
                 else:
-                    print(row)
                     try:
-                        ftmp = float(row[0])
+                        ftmp = float(rowrd[0])
                     except ValueError:
                         ftmp = 0
                         self.temptbl.append(ftmp)
@@ -128,15 +133,14 @@ class readconf:
                         self.temptbl.append(ftmp)
 
                     try:
-                        ftmp = float(row[1])
+                        ftmp = float(rowrd[1])
                     except ValueError:
                         ftmp = 100
                         self.pwmtbl.append(ftmp)
                     else:
                         self.pwmtbl.append(ftmp)
 
-                    if row[0] == self.FMT_CONFMD:
-                        print("tbl -> conf")
+                    if rowrd[0] == self.FMT_CONFMD:
                         readmode = self.FMT_CONFMD
             conff.close()
 
@@ -171,20 +175,26 @@ class ctrlpwm:
             self.rtnduty = self.pwmtbl[i]  + (temp - self.temptbl[i]) * (self.pwmtbl[i + 1] - self.pwmtbl[i]) / (self.temptbl[i + 1] - self.temptbl[i])
         return self.rtnduty
 
+def logout(mnmd, tgsns, temp, pwmduty):
+    dt_now = datetime.datetime.now()
+    outstr = str(dt_now) +" : " + mnmd + " : " + tgsns + " : "+ str(temp) + " : " +  str(pwmduty) + "\n"
+    with open(LOG_PATH + LOG_FILE, 'a') as f:
+        f.write(outstr)
 
-
-
-exname=["iwlwifi"]
-print(readtemp("ave",exname))
-print(readtemp("max",exname))
-print(readtemp("iwlwifi",""))
 
 fd =readconf()
 fd.readcnf()
 ttbl,ptbl = fd.readtbl()
-print(fd.readtbl())
-print(fd.readstpflg())
-mode = fd.readmonsns()
-print(fd.readexmonsns())
+mon = fd.readmonsns()
+exmon = fd.readexmonsns()
 fc = ctrlpwm(ttbl,ptbl)
-print(fc.calcduty(4.0))
+sns, deg = readtemp(mon, exmon)
+duty = fc.calcduty(deg)
+outstr = ""
+try:
+    fandrive.pwmout(duty)
+except:
+    logout(mon, sns, deg, "DutyOutError")
+else:
+    logout(mon, sns, deg, duty)
+
