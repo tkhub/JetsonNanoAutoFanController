@@ -183,7 +183,7 @@ def logout(mnmd, tgsns, temp, pwmduty):
     with open(LOG_PATH + LOG_FILE, 'a') as f:
         f.write(outstr)
 
-print(CSV_PATH + CSV_FILE)
+# print(CSV_PATH + CSV_FILE)
 fd =readconf()
 fd.readcnf()
 ttbl,ptbl = fd.readtbl()
