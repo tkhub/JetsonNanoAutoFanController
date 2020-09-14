@@ -25,8 +25,9 @@ def readsystemp(mode):
     strtmp = sns_name_path.replace('X',str(i)).replace('YYYY','type')
     try:
       typefile = open(strtmp)
-    except :
-      raise Exception("Can't Open Temp Type Files.")
+    except:
+      # 開けないファイルもあって当然なのでスルー
+      pass
     else:
       # センサ名ファイルが存在するので開く
       # センサ温度ファイルのファイル名を生成する
