@@ -2,10 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 FANPWM_DEVICE_FILE="/sys/devices/pwm-fan/target_pwm"
 PWMDAT_MAX = 255
 PWMDATF_MAX = float(PWMDAT_MAX)
 PWMDUTYF_MAX = 100.0
+
+
 
 def fanchk():
   if os.access(FANPWM_DEVICE_FILE, os.W_OK):
@@ -21,7 +24,7 @@ def pwmout(duty):
   except PermissionError:
     raise PermissionError("CAN'T OPEN \""+ FANPWM_DEVICE_FILE + "\".")
   else:
-    pwmduty = (PWMDATF_MAX * duty) / PWMDUTYF_MAX
+    pwmduty = (PWMDATF_MAX * duty) / PWMDUTYF_MAX 
     pwmdat = round(pwmduty)
     # pwm dat limit
     if pwmdat < 0:
@@ -33,9 +36,21 @@ def pwmout(duty):
     pwmdevice_file.close()
     return pwmdat
 
-# args = sys.argv
-# if len(args) == 2:
-#  print(fanpwmout(FANPWM_DEVICE_FILE, float(args[1])))
-# else:
-#   print("arg err")
-#print(fanchk())
+def main(args):
+    if len(args) == 2:
+        print(pwmout(float(args[1])))
+    else:
+        print("arg err")
+        print(fanchk())
+
+
+if __name__ == "__main__":
+  strin = sys.argv
+  try:
+    main(strin)
+  except Exception as e:
+    print(e)
+  else:
+    print("end")
+
+
