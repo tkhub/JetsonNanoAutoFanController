@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+import sys
 sns_name_path = '/sys/devices/virtual/thermal/thermal_zoneX/YYYY'
 ABSTEMP_ZERO = -235.15
 SYSTEMP_GAIN = 1000.0
@@ -21,12 +21,12 @@ def readsystemp(mode):
   sys_ave_temp = 0.0
   sys_temp_cnt = 0
   for i in range(10):
+    # センサ名ファイルを開く
     strtmp = sns_name_path.replace('X',str(i)).replace('YYYY','type')
     try:
       typefile = open(strtmp)
     except :
-      # 読み取れないファイルが有ることは織り込み済みなのでスルー
-      pass
+      raise Exception("Can't Open Temp Type Files.")
     else:
       # センサ名ファイルが存在するので開く
       # センサ温度ファイルのファイル名を生成する
@@ -34,8 +34,7 @@ def readsystemp(mode):
       try:
         tempfile = open(strtmp)
       except:
-        # 読み取りできない場合があっても、取り急ぎスルー
-        pass
+        raise Exception("Can't Open Temp Files.")
       else:
         # 開けるファイルだけ開く
         strtmp = tempfile.read()
@@ -45,11 +44,9 @@ def readsystemp(mode):
 
         if int_temp == SYSTEMP_OL:
           # 温度が無効値（センサが実際には機能していない場合）
-          # sns_name.append('NON_SNS')
-          # sns_temp.append(ABSTEMP_ZERO)
           pass
         else:
-          # センサが有効な場合のみセンサ名とセンサ温度療法を開く
+          # センサが有効な場合のみセンサ名とセンサ温度両方を開く
           # センサ名を取得
           strtmp = typefile.read()
           strtmp = strtmp.rstrip('\n')
@@ -87,3 +84,44 @@ def readsystemp(mode):
     return sns_name, sns_temp
   else:
     raise ValueError("Invalid Argument!")
+
+def main(args):
+  import sys
+  from systemp import readsystemp
+
+  ARG_MODE_ALL_STR = 'all'
+  ARG_MODE_MAX_STR = 'max'
+  ARG_MODE_AVE_STR = 'ave'
+  ARG_MODE_MIN_STR = 'min'
+
+  ans = []
+  sns_name = []
+  sns_temp = []
+  if len(args) == 1:
+    sns_name, sns_temp = readsystemp(ARG_MODE_ALL_STR)
+    for sns, temp in zip(sns_name, sns_temp):
+      print(sns + "\t: " + str(temp) + " degC")
+  elif args[1] == ARG_MODE_ALL_STR:
+    sns_name, sns_temp = readsystemp(ARG_MODE_ALL_STR)
+    for sns, temp in zip(sns_name, sns_temp):
+      print(sns + "\t: " + str(temp) + " degC")
+  elif args[1] == ARG_MODE_MIN_STR:
+    sns_name, sns_temp = readsystemp(ARG_MODE_MIN_STR)
+    print(sns_name + "\t: " + str(sns_temp) + " degC")
+  elif args[1] == ARG_MODE_MAX_STR:
+    sns_name, sns_temp = readsystemp(ARG_MODE_MAX_STR)
+    print(sns_name + "\t: " + str(sns_temp) + " degC")
+  elif args[1] == ARG_MODE_AVE_STR:
+    sns_name, sns_temp = readsystemp(ARG_MODE_AVE_STR)
+    print("AVerage \t: " + str(sns_temp) + " degC")
+  else:
+    print("Invalid Arg")
+
+if __name__ == "__main__":
+  strin = sys.argv
+  try:
+    main(strin)
+  except Exception as e:
+    print(e)
+  else:
+    print("end")
