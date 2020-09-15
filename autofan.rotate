@@ -1,0 +1,11 @@
+/var/log/autofan.log { # 対象のログファイル
+    ifempty            
+    dateformat .%Y%m%d 
+    missingok          
+    compress           
+    daily              
+    rotate 10          
+    postrotate         
+        /bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
+    endscript
+}
