@@ -175,7 +175,7 @@ class ctrlpwm:
                if self.temptbl[i] <= temp:
                     break
             self.rtnduty = self.pwmtbl[i]  + (temp - self.temptbl[i]) * (self.pwmtbl[i + 1] - self.pwmtbl[i]) / (self.temptbl[i + 1] - self.temptbl[i])
-        return self.rtnduty
+        return (self.rtnduty)
 
 def logout(mnmd, tgsns, temp, pwmduty):
     dt_now = datetime.datetime.now()
@@ -183,23 +183,51 @@ def logout(mnmd, tgsns, temp, pwmduty):
     with open(LOG_PATH + LOG_FILE, 'a') as f:
         f.write(outstr)
 
-# print(CSV_PATH + CSV_FILE)
-fd =readconf()
-fd.readcnf()
-ttbl,ptbl = fd.readtbl()
-mon = fd.readmonsns()
-exmon = fd.readexmonsns()
-fc = ctrlpwm(ttbl,ptbl)
-sns, deg = readtemp(mon, exmon)
-duty = fc.calcduty(deg)
-outstr = ""
-dt_now = datetime.datetime.now()
+def main(arg):
 
-try:
-    fandrive.pwmout(duty)
-except:
-    print( str(dt_now) +" : " + mon + " : " + sns + " : "+ str(deg) + " : DutyOutError")
-    sys.exit(1)
-else:
-    print( str(dt_now) +" : " + mon + " : " + sns + " : "+ str(deg) + " : " +  str(duty) )
-    sys.exit(1)
+    # print(CSV_PATH + CSV_FILE)
+    fd =readconf()
+    fd.readcnf()
+    ttbl,ptbl = fd.readtbl()
+    mon = fd.readmonsns()
+    exmon = fd.readexmonsns()
+    fc = ctrlpwm(ttbl,ptbl)
+    sns, deg = readtemp(mon, exmon)
+    duty = fc.calcduty(deg)
+    outstr = ""
+    dt_now = datetime.datetime.now()
+
+    if len(arg) != 2:
+        try:
+            fandrive.pwmout(duty)
+        except:
+            print( str(dt_now) +" : " + mon + " : " + sns + " : "+ str(deg) + " : DutyOutError")
+        else:
+            print( str(dt_now) +" : " + mon + " : " + sns + " : "+ str(deg) + " : " +  str(duty) )
+
+    elif arg[1] == "DBG":
+        print(ttbl,ptbl)
+        print(fc)
+        print(sns, deg)
+        print(duty)
+    elif arg[1] == "TEST":
+        degin = 0.0
+        while 0.0 <= degin <= 100.0:
+            print("deg test >> ", end = "")
+            degin = float(input())
+            dutyout = fc.calcduty(degin)
+            print("duty = " + str(dutyout))
+    else:
+        print("option DBG or TEST")
+
+
+
+
+if __name__ == "__main__":
+  strin = sys.argv
+  try:
+    main(strin)
+  except Exception as e:
+    print(e)
+  else:
+    pass
